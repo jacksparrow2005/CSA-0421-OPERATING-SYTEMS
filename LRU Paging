@@ -1,61 +1,65 @@
-#include <stdio.h>
-#include <stdbool.h>
+#include<stdio.h>
+#include <stdlib.h>
 
-#define MAX_FRAMES 10
-
-int main() {
-    int pages[MAX_FRAMES], frames[MAX_FRAMES], n, i, j, k, lru_index, page_faults = 0, count = 0;
-    bool is_duplicate;
-
-    for (i = 0; i < MAX_FRAMES; i++) {
-        frames[i] = -1;
+void reframe(int * frame, int frames, int index) {
+    /* send the current index to the end of the array */
+    int k, temp;
+    for (k = index; k < frames - 1; k++) { //iterate frame
+        temp = * (frame + k);
+        *(frame + k) = * (frame + k + 1);
+        *(frame + k + 1) = temp;
+        //printf("%d ",*(frame+k));
     }
+    //printf("\n");
+}
 
-    printf("Enter the number of pages: ");
-    scanf("%d", &n);
-
-    printf("Enter the page sequence: ");
-    for (i = 0; i < n; i++) {
-        scanf("%d", &pages[i]);
-    }
-
-    printf("\nPage   Frames\n");
-    for (i = 0; i < n; i++) {
-        printf("%d\t", pages[i]){
-        is_duplicate = false;
-        for (j = 0; j < MAX_FRAMES; j++) {
-            if (frames[j] == pages[i]) {
-                is_duplicate = true;
-                break;
+int lru(int csno, int * controlstring, int frames) {
+    int pf = 1, * frame, i, j = 0, k, avail = 0, index;
+    frame = calloc(sizeof(int), frames);
+    for (i = 0; i < csno; i++) {
+        /*iterate cntro string */
+        avail = 0;
+        for (k = 0; k < frames; k++) { //iterate frame
+            printf("%d ", *(frame + k));
+            if ( * (frame + k) == * (controlstring + i)) {
+                avail = 1;
+                index = k;
             }
         }
-
-        if (!is_duplicate) {
-            lru_index = -1;
-            for (j = 0; j < MAX_FRAMES; j++) {
-                bool found = false;
-                for (k = i - 1; k >= 0; k--) {
-                    if (frames[j] == pages[k]) {
-                        found = true;
-                        count = i - k;
-                        break;
-                    }
-                }
-                if (!found) {
-                    lru_index = j;
-                    break;
-                }
-             }
-            frames[lru_index] = pages[i];
-            page_faults++;
-        }
-
-        for (k = 0; k < MAX_FRAMES; k++) {
-            printf("%d ", frames[k]);
+        // printf("\n");
+        if (avail == 1) {
+            /*if element available in frame */
+            reframe(frame, frames, index);
+        } else {
+            /*element not available in frame */
+            *(frame + 0) = * (controlstring + i);
+            reframe(frame, frames, 0);
+            pf++;
         }
         printf("\n");
     }
+    for (k = 0; k < frames; k++)
+        printf("%d ", *(frame + k));
+    return pf;
+}
+int main() {
+    int csno, i, * controlstring, frames, pf;
+    printf("enter the no of control strings:");
+    scanf("%d", & csno);
 
-    printf("\nTotal page faults = %d\n", page_faults);
+    controlstring = malloc(sizeof(int) * csno);
+
+    printf("enter the control strings:");
+    for (i = 0; i < csno; i++) {
+        scanf("%d", controlstring + i);
+    }
+
+    printf("enter the no of frames:");
+    scanf("%d", & frames);
+
+    pf = lru(csno, controlstring, frames);
+
+    printf("no of page fault is %d", pf);
     return 0;
 }
+
